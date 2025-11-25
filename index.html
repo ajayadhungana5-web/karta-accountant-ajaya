@@ -400,6 +400,8 @@
                                     <th class="p-3">Company Name</th>
                                     <th class="p-3">Contact Person</th>
                                     <th class="p-3">Phone</th>
+                                    <!-- ADDED VAT TITLE HERE -->
+                                    <th class="p-3">Tax/VAT ID</th>
                                     <th class="p-3 text-right">Balance Due</th>
                                     <th class="p-3 text-center">Action</th>
                                 </tr>
@@ -2002,9 +2004,28 @@
             
             // Add Summary Footer
             const total = currentReportData.reduce((a,c) => a + c.total, 0);
-            html += `<div style="text-align:right; margin-top: 10px; font-weight:bold; border-top: 2px solid black; padding-top: 5px;">
-                Total: ${db.config.currency}${total.toFixed(2)}
-            </div>`;
+
+            let footerHtml = '';
+            
+            if (currentReportTitle.includes("VAT")) {
+                // SPECIFIC VAT FOOTER
+                const totalVat = currentReportData.reduce((a,c) => a + (c.tax || 0), 0);
+                const totalTaxable = currentReportData.reduce((a,c) => a + (c.sub || 0), 0);
+                
+                footerHtml = `
+                <div style="text-align:right; margin-top: 10px; font-size: 14px; border-top: 2px solid black; padding-top: 5px;">
+                    <p style="margin: 2px 0;">Total Taxable: ${db.config.currency}${totalTaxable.toFixed(2)}</p>
+                    <p style="margin: 2px 0;">Total VAT Collected: ${db.config.currency}${totalVat.toFixed(2)}</p>
+                    <p style="margin: 5px 0; font-weight: bold; font-size: 16px;">Grand Total: ${db.config.currency}${total.toFixed(2)}</p>
+                </div>`;
+            } else {
+                // GENERIC FOOTER
+                footerHtml = `<div style="text-align:right; margin-top: 10px; font-weight:bold; border-top: 2px solid black; padding-top: 5px;">
+                    Total: ${db.config.currency}${total.toFixed(2)}
+                </div>`;
+            }
+
+            html += footerHtml;
 
             reportView.innerHTML = html;
             setTimeout(() => window.print(), 200);
